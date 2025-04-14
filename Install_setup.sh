@@ -1,13 +1,13 @@
 #!/bin/bash
 
+# Exit on any command failure
+set -e
+
 # Ensure the script is run with root privileges
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 
    exit 1
 fi
-
-# Exit on any command failure
-set -e
 
 # Function to check if a package is installed
 is_installed() {
@@ -175,23 +175,15 @@ fi
 
 # Main script
 if ! is_installed postgresql; then
-    sudo apt install -y postgresql
-    echo "Setting default password for the postgres user..."
-    sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'password1';"
-    sudo systemctl enable postgresql
-    sudo systemctl start postgresql
-    if is_installed postgresql; then
-        installed_version=$(get_package_version postgresql)
-        echo "PostgreSQL installation completed (version: $installed_version)"
+    sudo apt install -y postgresql-client
+    if is_installed postgresql-client; then
+        installed_version=$(get_package_version postgresql-client)
+        echo "PostgreSQL Client installation completed (version: $installed_version)"
     else
-        echo "PostgreSQL installation failed."
+        echo "PostgreSQL Client installation failed."
         exit 1
     fi
 else
-    current_version=$(get_package_version postgresql)
-    echo "PostgreSQL is already installed (version: $current_version)"
+    current_version=$(get_package_version postgresql-client)
+    echo "PostgreSQL Client is already installed (version: $current_version)"
 fi
-
-# Reboot the system
-# echo "Rebooting the system."
-# sudo reboot
