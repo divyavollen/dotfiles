@@ -1,0 +1,116 @@
+---
+- name: Dev Env Setup
+  hosts: all
+  become: true
+  become_method: ansible.builtin.sudo
+
+  tasks:
+
+    - name: Install curl, git
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - zsh
+        state: present
+
+    - name: Make zsh the default shell
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        shell: /usr/bin/zsh
+
+    - name: Install OhMyZSH
+      ansible.builtin.get_url:
+        url: 'https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+        dest: '/tmp/zsh-installer.sh'
+        mode: '0644'
+      changed_when: false
+
+    - name: Execute the zsh-installer.sh
+      ansible.builtin.shell: |
+        sh /tmp/zsh-installer.sh
+      register: output
+      failed_when: false
+      changed_when: "'The $ZSH folder already exists' not in output.stdout"
+
+    - name: Remove the zsh-installer.sh
+      ansible.builtin.file:
+        path: /tmp/zsh-installer.sh
+        state: absent
+      changed_when: false
+
+    - name: Set nano as default in .zshrc
+      vars:
+        zshrcpath: "~/.zshrc"
+      ansible.builtin.blockinfile:
+        path: "{{ zshrcpath }}"
+        block: |
+          export EDITOR=nano
+          export VISUAL=nano
+        state: present
+        create: true
+        mode: '0644'
+
+    - name: Ensure required dependencies are installed
+      ansible.builtin.apt:
+        name:
+          - wget
+          - gpg
+        state: present
+
+    - name: Add Visual Studio Code repository
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main
+        state: present
+        update_cache: true
+
+    - name: Install Visual Studio Code, JDK 21, maven, postgresql-client, docker dependencies, fd-find
+      ansible.builtin.apt:
+        name:
+          - code
+          - openjdk-21-jdk
+          - maven
+          - postgresql-client
+          - fd-find
+          - apt-transport-https
+          - ca-certificates
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG apt Key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Create symbolic link
+      ansible.builtin.file:
+        src: "/usr/bin/fdfind"
+        dest: "/usr/bin/fd"
+        state: link
+
+    - name: Zoxide plugin for OhMyZSH
+      ansible.builtin.lineinfile:
+        path: "~/.zshrc"
+        line: 'eval "$(zoxide init zsh)"'
+        state: present
+        create: true
+        mode: '0644'
+
+    - name: Install dbeaver-ce
+      community.general.snap:
+        name: dbeaver-ce
