@@ -19,21 +19,21 @@
         name: "{{ ansible_user_id }}"
         shell: /usr/bin/zsh
 
-    - name: Install OhMyZSH
+    - name: Download OhMyZSH
       ansible.builtin.get_url:
         url: 'https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
         dest: '/tmp/zsh-installer.sh'
         mode: '0644'
       changed_when: false
 
-    - name: Execute the zsh-installer.sh
+    - name: Execute the OhMyZSH installer
       ansible.builtin.shell: |
         sh /tmp/zsh-installer.sh
       register: output
       failed_when: false
       changed_when: "'The $ZSH folder already exists' not in output.stdout"
 
-    - name: Remove the zsh-installer.sh
+    - name: Remove the OhMyZSH installer
       ansible.builtin.file:
         path: /tmp/zsh-installer.sh
         state: absent
@@ -51,23 +51,26 @@
         create: true
         mode: '0644'
 
-    - name: Ensure required dependencies are installed
+    - name: Download VSCode
+      ansible.builtin.get_url:
+        url: 'https://go.microsoft.com/fwlink/?LinkID=760868'
+        dest: '/tmp/code.deb'
+        mode: '0644'
+      changed_when: false
+
+    - name: Install VSCode
+      ansible.builtin.apt:
+        deb: /tmp/code.deb
+
+    - name: Remove the VSCode installer
+      ansible.builtin.file:
+        path: /tmp/code.deb
+        state: absent
+      changed_when: false
+
+    - name: Install JDK 21, maven, postgresql-client, fd-find, docker dependencies
       ansible.builtin.apt:
         name:
-          - wget
-          - gpg
-        state: present
-
-    - name: Add Visual Studio Code repository
-      ansible.builtin.apt_repository:
-        repo: deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main
-        state: present
-        update_cache: true
-
-    - name: Install Visual Studio Code, JDK 21, maven, postgresql-client, docker dependencies, fd-find
-      ansible.builtin.apt:
-        name:
-          - code
           - openjdk-21-jdk
           - maven
           - postgresql-client
