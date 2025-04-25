@@ -1,0 +1,68 @@
+---
+- name: ZSH setup
+  hosts: all
+
+  tasks:
+    - name: Install zsh
+      ansible.builtin.apt:
+        name:
+          - zsh
+        state: latest
+
+    - name: Make zsh the default shell
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        shell: /usr/bin/zsh
+
+    - name: Download OhMyZSH
+      ansible.builtin.get_url:
+        url: 'https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+        dest: '/tmp/zsh-installer.sh'
+        mode: '0644'
+      changed_when: false
+
+    - name: Execute the OhMyZSH installer
+      ansible.builtin.shell: |
+        sh /tmp/zsh-installer.sh
+      register: output
+      failed_when: false
+      changed_when: "'The $ZSH folder already exists' not in output.stdout"
+
+    - name: Remove the OhMyZSH installer
+      ansible.builtin.file:
+        path: /tmp/zsh-installer.sh
+        state: absent
+      changed_when: false
+
+    - name: Configure zsh
+      ansible.builtin.blockinfile:
+        path: /home/{{ ansible_user_id }}/.zshrc
+        block: "{{ lookup('file', 'config/zshrc_config') }}"
+        marker: "\n# {mark} zsh config\n"
+        marker_begin: "BEGIN"
+        marker_end: "END"
+        mode: '0644'
+
+    - name: Zoxide plugin for OhMyZSH
+      ansible.builtin.lineinfile:
+        path: "~/.zshrc"
+        line: 'eval "$(zoxide init zsh)"'
+        state: present
+        create: true
+        mode: '0644'
+
+    # - name: Check if fzf is installed
+    #   ansible.builtin.command: fzf --version
+    #   register: fzf_check
+    #   ignore_errors: true
+    #   changed_when: false
+
+    # - name: Clone the latest fzf repo
+    #   ansible.builtin.git:
+    #     repo: 'https://github.com/junegunn/fzf.git'
+    #     dest: /tmp/.fzf
+    #     version: HEAD
+    #     depth: 1
+    #   when: fzf_check.failed
+    #   register: fzf_clone
+    #   version: master

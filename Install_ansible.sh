@@ -8,7 +8,7 @@ fi
 
 # Install Ansible & dependencies
 sudo apt update
-sudo apt install software-properties-common
+sudo apt install -y software-properties-common
 sudo add-apt-repository -y --update ppa:ansible/ansible
 sudo apt install -y ansible
 ansible --version
@@ -28,6 +28,3 @@ fi
 sudo apt install -y openssh-server
 sudo systemctl start ssh
 sudo systemctl enable ssh
-
-# Run the playbook
-ansible-playbook playbook.yml

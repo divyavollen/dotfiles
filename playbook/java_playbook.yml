@@ -1,0 +1,12 @@
+---
+- name: Java Setup
+  hosts: all
+
+  tasks:
+
+    - name: Install JDK 21, maven
+      ansible.builtin.apt:
+        name:
+          - openjdk-21-jdk
+          - maven
+        state: latest
