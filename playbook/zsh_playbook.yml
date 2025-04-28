@@ -37,7 +37,7 @@
     - name: Configure zsh
       ansible.builtin.blockinfile:
         path: /home/{{ ansible_user_id }}/.zshrc
-        block: "{{ lookup('file', 'config/zshrc_config') }}"
+        block: "{{ lookup('file', 'config/.zshrc') }}"
         marker: "\n# {mark} zsh config\n"
         marker_begin: "BEGIN"
         marker_end: "END"
