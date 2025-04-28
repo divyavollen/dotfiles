@@ -1,0 +1,22 @@
+---
+- name: Dev Env Setup
+  hosts: all
+
+  tasks:
+
+    - name: Download VSCode
+      ansible.builtin.get_url:
+        url: 'https://go.microsoft.com/fwlink/?LinkID=760868'
+        dest: '/tmp/code.deb'
+        mode: '0644'
+      changed_when: false
+
+    - name: Install VSCode
+      ansible.builtin.apt:
+        deb: /tmp/code.deb
+
+    - name: Remove the VSCode installer
+      ansible.builtin.file:
+        path: /tmp/code.deb
+        state: absent
+      changed_when: false

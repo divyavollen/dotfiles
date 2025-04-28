@@ -1,0 +1,33 @@
+---
+- name: Misc Setup
+  hosts: all
+
+  tasks:
+
+    - name: Install curl, git
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+        state: latest
+
+    - name: Install postgresql-client, fd-find, build-essential
+      ansible.builtin.apt:
+        name:
+          - postgresql-client
+          - fd-find
+          - build-essential
+        state: latest
+      register: out
+      failed_when: false
+      changed_when: "'already set to manually installed.' not in out.stdout"
+
+    - name: Create symbolic link
+      ansible.builtin.file:
+        src: "/usr/bin/fdfind"
+        dest: "/usr/bin/fd"
+        state: link
+
+    - name: Install dbeaver-ce
+      community.general.snap:
+        name: dbeaver-ce
