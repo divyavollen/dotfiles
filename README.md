@@ -2,6 +2,7 @@
 This repository automates the setup of a developer machine using a combination of Ansible playbooks and Bash/Zsh scripts.
 It provisions commonly used tools like Java, Maven, Docker, PostgreSQL client, VSCode, Zsh, and other utilities.
 This is a practice project for learning Ansible automation and Linux environment setup.
+Code and development by me. Occasional reviews by others.
 
 # Tools Installed / Managed
 - System Tools: curl, git, zsh, nano, bat, fd-find, zoxide
