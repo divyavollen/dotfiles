@@ -1,0 +1,69 @@
+---
+- name: Flutter Setup
+  hosts: all
+  become: yes
+
+  vars:
+    flutter_version: "3.38.3"
+    flutter_install_dir: "/opt/"
+
+  tasks:
+
+  - name: Install Linux development tools
+    ansible.builtin.apt:
+      name:
+      - clang
+      - cmake
+      - ninja-build
+      - pkg-config
+      state: present
+      update_cache: yes
+
+  - name: Download Flutter
+    ansible.builtin.get_url:
+      url: 'https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_{{ flutter_version }}-stable.tar.xz'
+      dest: '/tmp/flutter.tar.xz'
+      mode: '0644'
+    changed_when: false
+
+  - name: Create install directory
+    ansible.builtin.file:
+      path: '{{ flutter_install_dir }}'
+      state: directory
+      mode: '0755'
+
+  - name: Extract Flutter SDK
+    ansible.builtin.unarchive:
+      src: '/tmp/flutter.tar.xz'
+      dest: '{{ flutter_install_dir }}'
+      remote_src: true
+
+  - name: Add flutter/bin to PATH system-wide (with duplicate check)
+    ansible.builtin.copy:
+      dest: '/etc/profile.d/flutter.sh'
+      mode: '0755'
+      content: |
+        # Add flutter/bin to PATH if not already present
+        if [[ ":$PATH:" != *":/opt/flutter/bin:"* ]]; then
+          export PATH="/opt/flutter/bin:$PATH"
+        fi
+
+  - name: Ensure flutter.sh is sourced in ~/.zshrc for all users
+    ansible.builtin.lineinfile:
+      path: "{{ item }}/.zshrc"
+      line: 'source /etc/profile.d/flutter.sh'
+      state: present
+      create: yes
+    with_fileglob:
+    - "/home/*"
+    become: yes
+    when: ansible_facts.os_family == "Debian" # Ensure it's applicable only to certain systems
+
+  - name: Run flutter doctor
+    ansible.builtin.command: "{{ flutter_install_dir }}/flutter/bin/flutter doctor"
+    register: doctor_output
+    changed_when: false
+
+  - name: Doctor output
+    ansible.builtin.debug:
+      var: doctor_output.stdout

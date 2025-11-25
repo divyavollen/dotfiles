@@ -24,7 +24,7 @@ Code and development by me. Occasional reviews by others.
    
 5. Lint playbook
    
-     `./lint_playbooks.sh`
+     `./linter.zsh`
    
    This interactive script lets you select and lint playbooks:
     - docker_playbook.yml
@@ -32,3 +32,8 @@ Code and development by me. Occasional reviews by others.
     - misc_playbook.yml
     - vscode_playbook.yml
     - zsh_playbook.yml
+    - flutter_playbook.yml
+
+6. Run playbook
+
+     `ansible-playbook <playbook-name>.yml`

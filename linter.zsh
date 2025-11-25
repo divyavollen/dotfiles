@@ -2,7 +2,7 @@
 
 PS3="Select playbook to lint: "
 
-items=("Docker-Playbook" "Java-Playbook" "Misc-Playbook" "VSCode-Playbook" "ZSH-Playbook")
+items=("Docker-Playbook" "Java-Playbook" "Misc-Playbook" "VSCode-Playbook" "ZSH-Playbook" "Flutter-Playbook")
 
 select item in "${items[@]}" Quit; do
     case $REPLY in
@@ -30,6 +30,11 @@ select item in "${items[@]}" Quit; do
         echo "Linting ZSH-Playbook"
         ansible-lint playbook/zsh_playbook.yml
         ;;
+
+    6)
+        echo "Linting Flutter-Playbook"
+        ansible-lint playbook/mobile/flutter_playbook.yml
+        ;;   
 
     $((${#items[@]} + 1)))
         echo "We're done!"
