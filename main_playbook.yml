@@ -1,0 +1,17 @@
+---
+- name: Main playbook that runs other playbooks
+  hosts: localhost
+  become: yes
+
+  tasks:
+  - name: Include required packages tasks
+    include_tasks: playbook/req_playbook.yml
+
+  - name: Include ZSH setup tasks
+    include_tasks: playbook/zsh_playbook.yml
+
+  - name: Include Docker setup tasks
+    include_tasks: playbook/docker_playbook.yml
+
+  - name: Include VS Code setup tasks
+    include_tasks: playbook/vscode_playbook.yml

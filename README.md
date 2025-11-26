@@ -1,8 +1,7 @@
 # dotfiles
-This repository automates the setup of a developer machine using a combination of Ansible playbooks and Bash/Zsh scripts.
-It provisions commonly used tools like Java, Maven, Docker, PostgreSQL client, VSCode, Zsh, and other utilities.
+This repository automates the setup of a developer machine using a combination of Ansible playbooks and shell scripts.
+It provisions commonly used tools like Docker, VSCode, Zsh, and other utilities.
 This is a practice project for learning Ansible automation and Linux environment setup.
-Code and development by me. Occasional reviews by others.
 
 # Tools Installed / Managed
 - System Tools: curl, git, zsh, nano, bat, fd-find, zoxide
@@ -13,18 +12,19 @@ Code and development by me. Occasional reviews by others.
 - Automation: Ansible + ansible-lint
 - SSH: OpenSSH server for Ansible connectivity
 
-# Usage
+# System setup
 1. Install Ansible (if not already installed)
    
      `sudo ./install_ansible.sh`
    
-3. Run Setup Scripts
+3. Run main playbook
    
-     `sudo ./setup_dev_tools.sh`
+     `ansible-playbook main_playbook.yml`
+     
    
-5. Lint playbook
-   
-     `./linter.zsh`
+### Linting
+
+Run the script `./linter.zsh`
    
    This interactive script lets you select and lint playbooks:
     - docker_playbook.yml
@@ -33,7 +33,3 @@ Code and development by me. Occasional reviews by others.
     - vscode_playbook.yml
     - zsh_playbook.yml
     - flutter_playbook.yml
-
-6. Run playbook
-
-     `ansible-playbook <playbook-name>.yml`

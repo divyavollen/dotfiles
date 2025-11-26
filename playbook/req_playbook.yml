@@ -1,0 +1,6 @@
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+    - curl
+    - git
+    state: latest

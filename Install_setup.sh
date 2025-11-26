@@ -1,4 +1,5 @@
 #!/bin/bash
+# NOT UPDATED, USE Ansible PLAYBOOKS INSTEAD
 
 # Exit on any command failure
 set -e
