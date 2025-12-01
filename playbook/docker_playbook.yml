@@ -1,4 +1,4 @@
-- name: Install docker dependencies
+- name: Install Docker dependencies
   ansible.builtin.apt:
     name:
     - apt-transport-https
@@ -6,22 +6,33 @@
     - software-properties-common
     state: latest
 
-- name: Add Docker GPG apt Key
-  ansible.builtin.apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+- name: Ensure the apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
 
-- name: Add Docker Repository
+- name: Download Docker GPG key to keyrings directory
+  ansible.builtin.shell:
+    cmd: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | tee /etc/apt/keyrings/docker.asc > /dev/null"
+    creates: /etc/apt/keyrings/docker.asc
+  become: yes
+  register: download_docker_key
+
+- name: Add Docker repository
   ansible.builtin.apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable"
     state: present
+  become: yes
+  register: add_docker_repo
 
-- name: Update apt and install docker
-  ansible.builtin.apt:
-    name:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
-    - docker-buildx-plugin
-    - docker-compose-plugin
-    state: latest
+- name: Force apt update and install Docker
+  ansible.builtin.shell: |
+    apt update -y
+    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  become: yes
+  register: apt_update_install
+  retries: 5
+  delay: 10
+  until: apt_update_install.rc == 0
+  failed_when: apt_update_install.rc != 0

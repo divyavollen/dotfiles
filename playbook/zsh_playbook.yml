@@ -1,13 +1,21 @@
+- name: Check if zsh is installed
+  ansible.builtin.command: which zsh
+  register: zsh_installed
+  changed_when: false
+  failed_when: false
+
 - name: Install zsh
   ansible.builtin.apt:
     name:
     - zsh
     state: latest
+  when: zsh_installed.rc != 0
 
 - name: Make zsh the default shell
   ansible.builtin.user:
     name: "{{ ansible_user_id }}"
     shell: /usr/bin/zsh
+  when: zsh_installed.rc != 0
 
 - name: Download OhMyZSH
   ansible.builtin.get_url:
@@ -15,12 +23,14 @@
     dest: '/tmp/zsh-installer.sh'
     mode: '0644'
   changed_when: false
+  when: zsh_installed.rc != 0
 
 - name: Execute the OhMyZSH installer
   ansible.builtin.shell: |
     sh /tmp/zsh-installer.sh
   register: output
   failed_when: false
+  when: zsh_installed.rc != 0
   changed_when: "'The $ZSH folder already exists' not in output.stdout"
 
 - name: Remove the OhMyZSH installer
@@ -28,6 +38,7 @@
     path: /tmp/zsh-installer.sh
     state: absent
   changed_when: false
+  when: zsh_installed.rc != 0
 
 - name: Configure zsh
   ansible.builtin.blockinfile:
@@ -36,12 +47,4 @@
     marker: "\n# {mark} zsh config\n"
     marker_begin: "BEGIN"
     marker_end: "END"
-    mode: '0644'
-
-- name: Zoxide plugin for OhMyZSH
-  ansible.builtin.lineinfile:
-    path: "~/.zshrc"
-    line: 'eval "$(zoxide init zsh)"'
-    state: present
-    create: true
     mode: '0644'

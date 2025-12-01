@@ -3,4 +3,5 @@
     name:
     - curl
     - git
-    state: latest
+    - bat
+    state: present
