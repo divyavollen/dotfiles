@@ -4,18 +4,18 @@
   changed_when: false
   failed_when: false
 
-- name: Install zsh
+- name: Install Zsh if not installed
   ansible.builtin.apt:
-    name:
-    - zsh
+    name: zsh
     state: latest
   when: zsh_installed.rc != 0
 
 - name: Make zsh the default shell
   ansible.builtin.user:
-    name: "{{ ansible_user_id }}"
+    name: "{{ username }}"
     shell: /usr/bin/zsh
   when: zsh_installed.rc != 0
+  become: yes
 
 - name: Download OhMyZSH
   ansible.builtin.get_url:
@@ -27,11 +27,23 @@
 
 - name: Execute the OhMyZSH installer
   ansible.builtin.shell: |
+    # Set the correct user environment
+    export HOME=/home/{{ username }}
+    export ZSH=/home/{{ username }}/.oh-my-zsh
     sh /tmp/zsh-installer.sh
   register: output
   failed_when: false
   when: zsh_installed.rc != 0
   changed_when: "'The $ZSH folder already exists' not in output.stdout"
+
+- name: Change ownership of .oh-my-zsh directory
+  ansible.builtin.file:
+    path: /home/{{ username }}/.oh-my-zsh
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes
+    mode: '0755'
+  when: output.changed == true
 
 - name: Remove the OhMyZSH installer
   ansible.builtin.file:
@@ -40,11 +52,32 @@
   changed_when: false
   when: zsh_installed.rc != 0
 
-- name: Configure zsh
-  ansible.builtin.blockinfile:
-    path: "~/.zshrc"
-    block: "{{ lookup('file', 'config/.zshrc') }}"
-    marker: "\n# {mark} zsh config\n"
-    marker_begin: "BEGIN"
-    marker_end: "END"
+- name: Ensure .zshrc exists (if not, create it with basic setup)
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.zshrc"
+    state: touch
+    mode: '0644'
+  register: zshrc_touch_result
+
+- name: Backup existing .zshrc file if it exists
+  ansible.builtin.copy:
+    src: "/home/{{ username }}/.zshrc"
+    dest: "/home/{{ username }}/.zshrc.bak"
+    backup: yes
+  when: zshrc_touch_result.changed == false
+
+- name: Ensure .zshrc.bak file belongs to the current user
+  ansible.builtin.file:
+    path: "/home/{{ username }}/.zshrc.bak"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '0644'
+  when: zshrc_touch_result.changed == false
+
+- name: Replace .zshrc with a new configuration file
+  ansible.builtin.copy:
+    src: config/.zshrc
+    dest: "/home/{{ username }}/.zshrc"
+    owner: "{{ username }}"
+    group: "{{ username }}"
     mode: '0644'
