@@ -9,9 +9,10 @@ This is a practice project for learning Ansible automation and Linux environment
      `sudo ./install_ansible.sh`
    
 3. Run main playbook
-   
-     `ansible-playbook main_playbook.yml`
+
+   Change the `username` in `main_playbook` then run:
      
+     `sudo ansible-playbook main_playbook.yml`
    
 ## Linting
 

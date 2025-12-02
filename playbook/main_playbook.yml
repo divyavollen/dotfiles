@@ -1,7 +1,8 @@
 ---
 - name: Main playbook that runs other playbooks
   hosts: localhost
-  become: yes
+  vars:
+    username: youruserhere
 
   tasks:
   - name: Include required packages tasks
@@ -10,8 +11,8 @@
   - name: Include ZSH setup tasks
     include_tasks: zsh_playbook.yml
 
-  - name: Include Docker setup tasks
-    include_tasks: docker_playbook.yml
-
   - name: Include VS Code setup tasks
     include_tasks: vscode_playbook.yml
+
+  - name: Include Docker setup tasks
+    include_tasks: docker_playbook.yml

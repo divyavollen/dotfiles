@@ -1,27 +1,23 @@
-- name: Download VSCode .deb package
-  ansible.builtin.get_url:
-    url: 'https://go.microsoft.com/fwlink/?LinkID=760868'
-    dest: '/tmp/code.deb'
-    mode: '0644'
+- name: Check if VS Code is installed
+  command: dpkg-query -W code
+  register: is_installed
+  failed_when: false
   changed_when: false
 
-- name: Add Microsoft GPG key
-  ansible.builtin.shell:
-    cmd: "curl https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/keyrings/packages.microsoft.gpg"
-    creates: /etc/apt/keyrings/packages.microsoft.gpg
-  become: true
+- name: Download VS Code deb package
+  get_url:
+    url: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+    dest: /tmp/vscode.deb
+  when: is_installed.rc != 0
 
-- name: Add Microsoft Repository for VSCode
-  ansible.builtin.apt_repository:
-    repo: deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main
+- name: Install VS Code package
+  apt:
+    deb: /tmp/vscode.deb
     state: present
+  when: is_installed.rc != 0
 
-- name: Install VSCode from downloaded .deb file
-  ansible.builtin.apt:
-    deb: /tmp/code.deb
-
-- name: Remove the VSCode installer
-  ansible.builtin.file:
-    path: /tmp/code.deb
+- name: Clean up downloaded deb
+  file:
+    path: /tmp/vscode.deb
     state: absent
-  changed_when: false
+  when: is_installed.rc != 0
