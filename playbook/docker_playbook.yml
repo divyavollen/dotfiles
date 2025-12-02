@@ -30,3 +30,10 @@
   delay: 10
   until: apt_update_install.rc == 0
   failed_when: apt_update_install.rc != 0
+
+- name: Add current user to the docker group
+  ansible.builtin.user:
+    name: "{{ username }}"
+    group: docker
+    append: yes
+  become: yes
