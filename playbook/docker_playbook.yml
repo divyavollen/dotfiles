@@ -34,6 +34,13 @@
 - name: Add current user to the docker group
   ansible.builtin.user:
     name: "{{ username }}"
-    group: docker
+    groups:
+    - docker
     append: yes
   become: yes
+
+- name: Allow local docker to access X server
+  ansible.builtin.command: xhost +local:docker
+  environment:
+    DISPLAY: "{{ lookup('env','DISPLAY') }}"
+    XAUTHORITY: "{{ lookup('env','XAUTHORITY') }}"
